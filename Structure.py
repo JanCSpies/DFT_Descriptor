@@ -65,6 +65,13 @@ class Structure(object):
                     if count_hyphens == 2:
                         standard_orientation.append(line)
 
+            #now check for thermal Free Energy
+            if inside_block == False and "Sum of electronic and thermal Free Energies=" in line:
+                Energy = float(line.split()[-1])
+                self.energy = Energy * 627.15 #Energy in kcal/mol
+            else:
+                continue
+
         #Convert text output into a coordinates matrix and a list of elements
         orientation = standard_orientation_block[-1]  # last geometry(orientatiion) should be the optimized one
         orientation = [line.split() for line in orientation]  # remove spaces
@@ -83,6 +90,8 @@ if __name__ == "__main__":
     smile = "C(C)CSC(=O)c1ccccc1"
     Strx = Structure(smile=smile)
     Strx.name = 'struc1'
+
+    Strx.read_gauss_output("/home/student/j_spie17/molecular_prosthetics/gaussian/YPACPXJQEYROHD-UHFFFAOYSA-N_conf_0.log")
 
 
 
