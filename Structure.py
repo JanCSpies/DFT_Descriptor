@@ -1,6 +1,8 @@
 from rdkit import Chem
+from rdkit.Chem import Draw
 from morfeus import *
 import numpy as np
+import os
 
 #this is incomplete!!!! only important elements in here yet
 periodic_table = {1 : 'H', 2 : 'He' , 3 : 'Li', 4 : 'Be', 5 : 'B', 6 : 'C' , 7 : 'N', 8 : 'O' , 9 : 'F', 10 : 'Ne', 11 : 'Na',
@@ -83,6 +85,39 @@ class Structure(object):
 
         return
 
+    def rdkit_geometries(self):
+        self.mol = Chem.MolFromSmiles(self.smile)
+        return
+
+    def draw_indexed_molecule(self, save_dir=None):
+        '''
+        Saves an image of the Structure with H_atoms and all Indexes
+        :param save_dir: Location where the .png will be saved
+        :return:
+        TODO: As of yet the directory is not changed back from the save_dir
+        '''
+        if not save_dir:
+            save_dir = input('Please set a path to save the .png file:')
+
+        if not self.name:
+            self.name = input('Please set a name to save the .png file:')
+
+        if not self.mol:
+            self.mol = Chem.MolFromSmiles(self.smile)
+
+        self.mol_H = Chem.AddHs(self.mol)
+
+        # Nummeriere alle Atome einschließlich Wasserstoff
+        for atom in self.mol_H.GetAtoms():
+            atom.SetProp('atomLabel', str(atom.GetIdx()))
+        # Zeichne die Molekülstruktur und speichere das Bild
+        img = Draw.MolToImage(mol, size=(300, 300), kekulize=True, wedgeBonds=True)
+        img.save(f"{self.name}_indexed.png")
+    def match_dft_mol(self):
+
+        return
+    
+
 
 
 
@@ -92,6 +127,9 @@ if __name__ == "__main__":
     Strx.name = 'struc1'
 
     Strx.read_gauss_output("/home/student/j_spie17/molecular_prosthetics/gaussian/YPACPXJQEYROHD-UHFFFAOYSA-N_conf_0.log")
+
+
+
 
 
 
