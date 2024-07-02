@@ -1,5 +1,5 @@
 import os
-
+import numpy as np
 
 def write_xyz_file(filename, atoms, coordinates):
     """
@@ -24,15 +24,89 @@ def write_xyz_file(filename, atoms, coordinates):
         for atom, coord in zip(atoms, coordinates):
             f.write(f"{atom} {coord[0]:.6f} {coord[1]:.6f} {coord[2]:.6f}\n")
 
-if __name__ == "__main__":
-    # Example usage
-    atoms = ['C', 'H', 'H', 'H', 'H']
-    coordinates = [
-        [0.000000, 0.000000, 0.000000],
-        [0.000000, 0.000000, 1.089000],
-        [1.026719, 0.000000, -0.363000],
-        [-0.513360, 0.889165, -0.363000],
-        [-0.513360, -0.889165, -0.363000]
-    ]
 
-    write_xyz_file('molecule.xyz', atoms, coordinates)
+#####################
+'''
+Matrix calculations
+'''
+
+def unit_vector(vector):
+    '''
+    Returns a unit vector
+    :param vector:
+    :return:
+    '''
+    uv = vector / np.linalg.norm(vector)
+    return uv
+
+def calculate_bond_length(atom_1, atom_2):
+    '''
+    Calculate distance between two points
+    :param atom_1:
+    :param atom_2:
+    :return: Bond_length in angstrom
+    '''
+    d = np.linalg.norm(np.array(atom_2)-np.array(atom_1))
+    return d
+
+def calculate_angle(atom_1, atom_2,atom_3):
+    '''
+    Calculate the angle between 3 atoms
+    :param atom_1:
+    :param atom_2: center atom
+    :param atom_3:
+    :return: angle in degrees
+    '''
+    #get vectors
+    v1 = np.array(atom_1) - np.array(atom_2)
+    v2 = np.array(atom_3) - np.array(atom_2)
+    #calculate angle
+    angle = np.arccos(np.dot(v1,v2)/(np.linalg.norm(v1)*np.linalg.norm(v2)))
+    angle = np.rad2deg(angle) #because normally its in radians that scale weirdly
+    return angle
+
+def calculate_dihedral(atom_1, atom_2,atom_3,atom_4):
+    '''
+    Gets a dihedral angle between 4 atoms (so far always positive?)
+    :param atom_1:
+    :param atom_2:
+    :param atom_3:
+    :param atom_4:
+    :return: Dihedral angle in degrees
+    '''
+
+    #get vectors
+    v1 = np.array(atom_2) - np.array(atom_1)
+    v2 = np.array(atom_3) - np.array(atom_2)
+    v3 = np.array(atom_4) - np.array(atom_3)
+
+    #get planes
+    p1 = np.cross(v1,v2)
+    p2 = np.cross(v2,v3)
+
+    #get dihedral
+    dih = np.arccos(np.dot(p1,p2)/(np.linalg.norm(p1)*np.linalg.norm(p2)))
+    return np.rad2deg(dih)
+
+##########################################
+
+if __name__ == "__main__":
+    atom1 = [4.45484, -0.58563,1.60893]
+    atom2 = [4.38996,-1.03181,0.61049]
+    atom3 = [4.00101,0.01476,-0.43071]
+    atom4 = [4.78314, 0.78219, -0.48940]
+    atom5 = [5.36288,-1.47432,0.37658]
+    a1 = calculate_angle(atom1,atom2,atom3)
+    a2 = calculate_angle(atom4,atom3,atom2)
+    print('a1: ',a1,' and a2: ',a2)
+
+    l1 = calculate_bond_length(atom1,atom2)
+    l2 = calculate_bond_length(atom3,atom4)
+    print('l1: ', l1, ' and l2: ', l2)
+
+    dih = calculate_dihedral(atom1,atom2,atom3,atom4)
+    print('dih: ', dih)
+    dih = calculate_dihedral(atom5, atom2, atom3, atom4)
+    print('dih2: ', dih)
+
+    print('done')
