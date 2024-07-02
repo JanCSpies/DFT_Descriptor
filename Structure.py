@@ -3,6 +3,8 @@ from rdkit.Chem import Draw
 from morfeus import *
 import numpy as np
 import os
+from Utils import  *
+from rdkit.Chem import rdDetermineBonds
 
 #this is incomplete!!!! only important elements in here yet
 periodic_table = {1 : 'H', 2 : 'He' , 3 : 'Li', 4 : 'Be', 5 : 'B', 6 : 'C' , 7 : 'N', 8 : 'O' , 9 : 'F', 10 : 'Ne', 11 : 'Na',
@@ -98,6 +100,7 @@ class Structure(object):
         '''
         if not save_dir:
             save_dir = input('Please set a path to save the .png file:')
+        os.chdir(save_dir)
 
         if not self.name:
             self.name = input('Please set a name to save the .png file:')
@@ -111,9 +114,45 @@ class Structure(object):
         for atom in self.mol_H.GetAtoms():
             atom.SetProp('atomLabel', str(atom.GetIdx()))
         # Zeichne die Molekülstruktur und speichere das Bild
-        img = Draw.MolToImage(mol, size=(300, 300), kekulize=True, wedgeBonds=True)
+
+        img = Draw.MolToImage(self.mol_H, size=(300, 300), kekulize=True, wedgeBonds=True)
         img.save(f"{self.name}_indexed.png")
-    def match_dft_mol(self):
+
+
+    def coordinates_to_mol_via_xyz(self,tmp_dir,delete_xyz=True):
+        '''
+        This function (temporarily) creates an xyz file from previous read in coordinates and elements
+        This in turn is read in with rdkit function to create a Mol object that has the same Indexing as the xyz file and has the geometries in its conformer
+        :param tmp_dir: Where the .xyz file will be created
+        :param delete_xyz: optinal if xyz file should be deleted afterwards
+        :return:
+        '''
+        #change directory
+        if not tmp_dir:
+            tmp_dir = input('Please set a path to save the .xyz file:')
+        os.chdir(tmp_dir)
+
+        if not self.name:
+            self.name = input('Please set a name to save the .xyz file:')
+
+        #save geometry as xyz
+        write_xyz_file(filename=f"{self.name}.xyz",atoms=self.elements,coordinates=self.coordinates)
+
+        #read xyz
+        raw_mol = Chem.MolFromXYZFile(f"{self.name}.xyz")
+        conn_mol = Chem.Mol(raw_mol)
+
+        rdDetermineBonds.DetermineConnectivity(conn_mol, charge=0)
+        rdDetermineBonds.DetermineBondOrders(conn_mol, charge=0)
+        # Chem.RemoveHs(conn_mol) #TODO: should they stay or should they go?
+        self.mol = conn_mol
+
+        #update smiles
+        self.smile = Chem.CanonSmiles(Chem.MolToSmiles(self.mol))
+
+        #delete xyz
+        if delete_xyz == True:
+            os.remove(f"{self.name}.xyz")
 
         return
     
@@ -129,8 +168,16 @@ if __name__ == "__main__":
     Strx.read_gauss_output("/home/student/j_spie17/molecular_prosthetics/gaussian/YPACPXJQEYROHD-UHFFFAOYSA-N_conf_0.log")
 
 
+    from rdkit.Chem import rdDetermineBonds
 
+    raw_mol = Chem.MolFromXYZFile("/home/student/j_spie17/molecular_prosthetics/test/YPACPXJQEYROHD-UHFFFAOYSA-N_conf_0.xyz")
+    conn_mol = Chem.Mol(raw_mol)
 
+    rdDetermineBonds.DetermineConnectivity(conn_mol, charge=0)
+    rdDetermineBonds.DetermineBondOrders(conn_mol, charge=0)
+    # Chem.RemoveHs(conn_mol)
+
+    print(Chem.MolToSmiles(conn_mol))
 
 
 
