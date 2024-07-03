@@ -166,19 +166,10 @@ if __name__ == "__main__":
     Strx.name = 'struc1'
 
     Strx.read_gauss_output("/home/student/j_spie17/molecular_prosthetics/gaussian/YPACPXJQEYROHD-UHFFFAOYSA-N_conf_0.log")
-
-
-    from rdkit.Chem import rdDetermineBonds
-
-    raw_mol = Chem.MolFromXYZFile("/home/student/j_spie17/molecular_prosthetics/test/YPACPXJQEYROHD-UHFFFAOYSA-N_conf_0.xyz")
-    conn_mol = Chem.Mol(raw_mol)
-
-    rdDetermineBonds.DetermineConnectivity(conn_mol, charge=0)
-    rdDetermineBonds.DetermineBondOrders(conn_mol, charge=0)
-    # Chem.RemoveHs(conn_mol)
-
-    print(Chem.MolToSmiles(conn_mol))
-
+    print('Smile: ',Strx.smile)
+    Strx.name = 'test'
+    Strx.coordinates_to_mol_via_xyz(tmp_dir='/home/student/j_spie17/molecular_prosthetics/test/')
+    print(Strx.smile)
 
 
     print('done')
