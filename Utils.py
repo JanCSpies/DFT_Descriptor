@@ -1,5 +1,7 @@
 import os
 import numpy as np
+from rdkit import Chem
+from rdkit.Chem import Draw
 
 def write_xyz_file(filename, atoms, coordinates):
     """
@@ -23,6 +25,31 @@ def write_xyz_file(filename, atoms, coordinates):
         # Write the atomic symbols and coordinates
         for atom, coord in zip(atoms, coordinates):
             f.write(f"{atom} {coord[0]:.6f} {coord[1]:.6f} {coord[2]:.6f}\n")
+
+
+def draw_indexed_molecule(mol, save_dir=None, name=None):
+    '''
+    Saves an image of the Structure with H_atoms and all Indexes
+    :param save_dir: Location where the .png will be saved
+    :return:
+    TODO: As of yet the directory is not changed back from the save_dir
+    '''
+    if not save_dir:
+        save_dir = input('Please set a path to save the .png file:')
+    os.chdir(save_dir)
+
+    if not name:
+        name = input('Please set a name to save the .png file:')
+
+    mol_H = Chem.AddHs(mol)
+
+    # Nummeriere alle Atome einschließlich Wasserstoff
+    for atom in mol_H.GetAtoms():
+        atom.SetProp('atomLabel', str(atom.GetIdx()))
+    # Zeichne die Molekülstruktur und speichere das Bild
+
+    img = Draw.MolToImage(mol_H, size=(300, 300), kekulize=True, wedgeBonds=True)
+    img.save(f"{name}_indexed.png")
 
 
 #####################
